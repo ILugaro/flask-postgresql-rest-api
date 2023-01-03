@@ -1,7 +1,7 @@
 from database.db import get_connection
 
 
-class ContactModel():
+class ContactsModel:
 
     def add_contact(self, contact):
         """Добавляет нового пользователя. Возвращает None при успешном добавлении или текст ошибки в случае неудачи"""
@@ -30,7 +30,9 @@ class ContactModel():
             print(ex)
             return ex
 
-    def show_contascts(self, columns, search, sort, typeSort, obj_filters):
+    @staticmethod
+    def show_contascts(list_columns =['*'], search='', sort='', typeSort='', obj_filters=None):
+        columns = ",".join(list_columns)
         str_filter = ''
         if obj_filters:
             str_filter = ''
@@ -59,9 +61,10 @@ class ContactModel():
         try:
             connection = get_connection()
             with connection.cursor() as cursor:
-                cursor.execute('SELECT ' + columns + ' FROM contacts WHERE' + str_SQL)
-                row = cursor.fetchone()
-            return row
+                print('SELECT ' + columns + ' FROM contacts' + str_SQL)
+                cursor.execute('SELECT ' + columns + ' FROM contacts' + str_SQL)
+                rows = cursor.fetchall()
+            return {'contacts': rows, 'err': ''}
         except Exception as ex:
             print(ex)
             return ex
@@ -74,3 +77,19 @@ class ContactModel():
         except Exception as ex:
             print(ex)
             return ex
+
+    @staticmethod
+    def make_obj_contacts(list_columns, list_contacts):
+        obj_contacts = []
+        len_columns = len(list_columns)
+
+        for contact in list_contacts:
+            print('&&&^^', contact)
+            obj = {}
+            column = 0
+            while column < len_columns:
+                if not contact[column] is None:
+                    obj[list_columns[column]] = contact[column]
+                column += 1
+            obj_contacts.append(obj)
+        return obj_contacts

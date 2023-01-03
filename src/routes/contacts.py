@@ -29,8 +29,9 @@ def authentication(f):
 @main.route('/show', methods=['POST'])
 @authentication
 def show(user):
-
-    return 'test'
+    data = user.show()
+    if data['err']: abort(data['err'], 500)
+    return data['contacts']
 
 
 

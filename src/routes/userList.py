@@ -13,6 +13,7 @@ from models.entities.User import Default_user
 
 def admin_only(f):
     def wrapper(*args, **kwargs):
+        if not request.authorization: abort(make_response('Требуется basic авторизация по логину и паролю'), 403)
         info_user = UserModel.userInfo(request.authorization["username"])
         if not info_user: abort(make_response('Пользователь не найден'), 403)
 
