@@ -18,8 +18,8 @@ def admin_only(f):
         if not info_user: abort(make_response('Пользователь не найден'), 403)
 
         # создания экзампляра Admin или Default_user в зависимости от роли клиента
-        if info_user[1] == 'a': user = Admin(request.authorization["username"], 'pbkdf2:sha256:' + info_user[0])
-        elif info_user[1] == 'd': user = Default_user(request.authorization["username"], 'pbkdf2:sha256:' + info_user[0])
+        if info_user[2] == 'a': user = Admin(info_user[0], request.authorization["username"], 'pbkdf2:sha256:' + info_user[1])
+        elif info_user[2] == 'd': user = Default_user(info_user[0], request.authorization["username"], 'pbkdf2:sha256:' + info_user[1])
 
         if not user.check_password(request.authorization["password"]): abort(make_response('Неверный пароль'), 403)
         if not user.role == 'a':

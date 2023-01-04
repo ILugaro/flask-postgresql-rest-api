@@ -3,16 +3,15 @@ from database.db import get_connection
 
 class ContactsModel:
 
-    def add_contact(self, contact):
+    def add_contact(contact):
         """Добавляет нового пользователя. Возвращает None при успешном добавлении или текст ошибки в случае неудачи"""
         try:
             connection = get_connection()
             with connection.cursor() as cursor:
-                cursor.execute("""INSERT INTO contacts (name, last_name, patronymic, organization, post, email, phone, holder) 
-                                VALUES (%s, %s, %s)""", (
+                cursor.execute("""INSERT INTO contacts (name, last_name, patronymic, organization, post, email, phone, holder_id) 
+                                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""", (
                     contact.name, contact.last_name, contact.patronymic, contact.organization, contact.post,
-                    contact.email,
-                    contact.phone, contact.holder))
+                    contact.getEmail(), contact.getPhone(), contact.holder))
                 connection.commit()
             return None
         except Exception as ex:
@@ -46,7 +45,7 @@ class ContactsModel:
                 str_sort += 'DESC'
         str_search = ''
         if search:
-            str_search = f'AND tsv @@ plainto_tsquery("russian", {search});'
+            str_search = f"tsv @@ plainto_tsquery('russian', '{search}');"
 
         str_SQL = ''
         if str_filter: str_SQL + str_filter
@@ -62,12 +61,12 @@ class ContactsModel:
             connection = get_connection()
             with connection.cursor() as cursor:
                 print('SELECT ' + columns + ' FROM contacts' + str_SQL)
-                cursor.execute('SELECT ' + columns + ' FROM contacts' + str_SQL)
+                cursor.execute("SELECT " + columns + " FROM contacts" + str_SQL)
                 rows = cursor.fetchall()
             return {'contacts': rows, 'err': ''}
         except Exception as ex:
             print(ex)
-            return ex
+            return {'contacts': None, 'err': ex}
 
     def change_contact(self, contact, key):
 
@@ -84,7 +83,6 @@ class ContactsModel:
         len_columns = len(list_columns)
 
         for contact in list_contacts:
-            print('&&&^^', contact)
             obj = {}
             column = 0
             while column < len_columns:

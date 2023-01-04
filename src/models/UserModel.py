@@ -11,7 +11,7 @@ class UserModel:
         try:
             connection = get_connection()
             with connection.cursor() as cursor:
-                cursor.execute("""SELECT password, role FROM users WHERE login = %s""", (login,))
+                cursor.execute("""SELECT id, password, role FROM users WHERE login = %s""", (login,))
                 row = cursor.fetchone()
             return row
         except Exception as ex:

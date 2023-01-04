@@ -2,14 +2,7 @@ from models.ContactsModel import ContactsModel
 from werkzeug.security import generate_password_hash, check_password_hash
 
 
-class User():
-    # запретить создание экземпляра
-
-    def __init__(self, login, hashPassword) -> None:
-        self.login = login
-        self.hashPassword = hashPassword
-        self.role = None
-        self.userId = None
+class User:
 
     def show(self):
         raise NotImplementError(f'В дочернем классе должен быть метод {self.__name__}')
@@ -29,27 +22,30 @@ class User():
 
 
 class Default_user(User):
-    def __init__(self, login, hashPassword) -> None:
+    def __init__(self, userId, login, hashPassword) -> None:
+        self.userId = userId
         self.login = login
         self.hashPassword = hashPassword
         self.role = 'd'
 
-    def show(self, search, sort, typeSort, obj_filters):
+    def show(self, search = '', sort = '', typeSort = '', obj_filters = {}):
+
         columns = ['id', 'name', 'last_name', 'patronymic', 'organization', 'post', 'email', 'phone'] # ограничиваю доступную информацию
         obj_filters.fk_holder_id = self.userId  # искать только среди контактов пользователя
         obj_filters.deleted = False  # не показывать удаленные контакты
 
-        ContactsModel.show_contascts(columns, search, sort, typeSort, obj_filters)
-
-        # сделать удаление служебной информации
-        print('dfsdf')
+        obj_data = ContactsModel.show_contascts(columns, search, sort, typeSort, obj_filters)
+        if obj_data['err']: return obj_data
+        listOfContacts = ContactsModel.make_obj_contacts(columns, obj_data['contacts'])
+        return {'contacts': listOfContacts, 'err': ''}
 
     def delete(self, id):
         ContactsModel.delete_contact(id, self.userid)
 
-    def add_contact(self, contact):
-        contact.holder = self.userId
-        ContactsModel.add_contact(contact, self.userId)
+    def add_contact(self, new_contact):
+        if new_contact.holder and not new_contact.holder == self.userId: 'Недопустимое значение "holder"! Укажите свой id клиента или не используйте в запросе.'
+        new_contact.holder = self.userId
+        return ContactsModel.add_contact(contact=new_contact)
 
     def change_contact(self, contact, key):
         if not contact.holder:
@@ -61,25 +57,28 @@ class Default_user(User):
 
 class Admin(User):
 
-    def __init__(self, login, hashPassword) -> None:
+    def __init__(self, userId, login, hashPassword) -> None:
+        self.userId = userId
         self.login = login
         self.hashPassword = hashPassword
         self.role = 'a'
 
-    def show(self, search='', sort='', typeSort='', obj_filters=''):
-        colums = ['id', 'name', 'last_name', 'patronymic', 'organization', 'post', 'email', 'phone', 'deleted']
-        obj_data = ContactsModel.show_contascts(colums, search, sort, typeSort, obj_filters)
+    def show(self, search='', sort='', typeSort='', obj_filters={}):
+        columns = ['id', 'name', 'last_name', 'patronymic', 'organization', 'post', 'email', 'phone', 'deleted']
+        obj_data = ContactsModel.show_contascts(columns, search, sort, typeSort, obj_filters)
         if obj_data['err']: return obj_data
-        listOfContacts = ContactsModel.make_obj_contacts(colums ,obj_data['contacts'])
-        return {'contacts': listOfContacts, 'err':''}
+        listOfContacts = ContactsModel.make_obj_contacts(columns ,obj_data['contacts'])
+        return {'contacts': listOfContacts, 'err': ''}
 
 
 
     def delete(id):
         ContactsModel.delete_contact(id)
 
-    def add_contact(contact):
-        ContactsModel.add_contact(contact)
+
+    def add_contact(self, new_contact):
+        if not new_contact.holder: new_contact.holder = self.userId
+        return ContactsModel.add_contact(contact=new_contact)
 
     def change_contact(contact, key):
         ContactsModel.contact(contact, key)

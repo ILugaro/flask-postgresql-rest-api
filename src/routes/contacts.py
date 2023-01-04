@@ -7,6 +7,8 @@ from models.UserModel import UserModel
 # Entities
 from models.entities.User import Admin
 from models.entities.User import Default_user
+from models.entities.Contact import Contact
+
 
 def authentication(f):
     def wrapper():
@@ -15,29 +17,54 @@ def authentication(f):
         if not info_user: abort(make_response('Пользователь не найден'), 403)
 
         # создания экзампляра Admin или Default_user в зависимости от роли клиента
-        if info_user[1] == 'a': user = Admin(request.authorization["username"], 'pbkdf2:sha256:' + info_user[0])
-        elif info_user[1] == 'd': user = Default_user(request.authorization["username"], 'pbkdf2:sha256:' + info_user[0])
+        if info_user[2] == 'a':
+            user = Admin(info_user[0], request.authorization["username"], 'pbkdf2:sha256:' + info_user[1])
+        elif info_user[2] == 'd':
+            user = Default_user(info_user[0], request.authorization["username"], 'pbkdf2:sha256:' + info_user[1])
 
         if not user.check_password(request.authorization["password"]): abort(make_response('Неверный пароль'), 403)
 
         return f(user)
+
     wrapper.__name__ = f.__name__  # что бы не было ошибки AssertionError
     return wrapper
-
 
 
 @main.route('/show', methods=['POST'])
 @authentication
 def show(user):
-    data = user.show()
+    search = 'Олег'
+    sort = ''
+    typeSort = ''
+    obj_filters = None
+
+    data = user.show(search, sort, typeSort, obj_filters)
     if data['err']: abort(data['err'], 500)
     return data['contacts']
 
 
+@main.route('/add', methods=['POST'])
+@authentication
+def add(user):
+    # проверка корректности запроса
+    MAY_EXIST = ['name', 'last_name', 'patronymic', 'organization', 'post', 'email', 'phone', ]
+    for parametr in request.form:
+        if not (parametr in MAY_EXIST):
+            abort(make_response(f'Неизвестный параметр: "{parametr}"', 400))
+
+    new_contact = Contact()
+    for parametr in request.form:
+        if parametr == 'phone':
+            err = new_contact.setPhone(request.form[parametr])  # вернет None в случае успеха
+            if err: abort(make_response(err, 400))
+            continue
+        if parametr == 'email':
+            err = new_contact.setEmail(request.form[parametr]) # вернет None в случае успеха
+            if err: abort(make_response(err, 400))
+            continue
+        new_contact[parametr] = request.form[parametr]
 
 
-
-
-
-    
-
+    err = user.add_contact(new_contact=new_contact) # вернет None в случае успеха
+    if err: abort(make_response(str(err), 400))
+    return (f'Новый контакт добавлен.', 201)
