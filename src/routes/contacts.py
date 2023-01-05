@@ -12,20 +12,20 @@ from models.entities.Contact import Contact
 
 
 def authentication(f):
-    def wrapper():
+    def wrapper(*args, **kwargs):
         if not request.authorization: abort(make_response('Требуется basic авторизация по логину и паролю'), 403)
         info_user = UserModel.userInfo(request.authorization["username"])
         if not info_user: abort(make_response('Пользователь не найден'), 403)
 
         # создания экзампляра Admin или Default_user в зависимости от роли клиента
         if info_user[2] == 'a':
-            user = Admin(info_user[0], request.authorization["username"], 'pbkdf2:sha256:' + info_user[1])
+            user = Admin(request.authorization["username"], 'pbkdf2:sha256:' + info_user[1])
         elif info_user[2] == 'd':
             user = Default_user(info_user[0], request.authorization["username"], 'pbkdf2:sha256:' + info_user[1])
-
+        user.userId = info_user[0]
         if not user.check_password(request.authorization["password"]): abort(make_response('Неверный пароль'), 403)
 
-        return f(user)
+        return f(user,*args, **kwargs)
 
     wrapper.__name__ = f.__name__  # что бы не было ошибки AssertionError
     return wrapper
@@ -68,7 +68,14 @@ def add(user):
             continue
         new_contact[parametr] = request.form[parametr]
 
-
     err = user.add_contact(new_contact=new_contact) # вернет None в случае успеха
     if err: abort(make_response(str(err), 400))
     return (f'Новый контакт добавлен.', 201)
+
+
+@main.route('/<contact_id>', methods=['DELETE'])
+@authentication
+def delete(user, contact_id):
+    err = user.delete(contact_id, request.args.get('holder'))
+    if err: abort(make_response(str(err), 400))
+    return ('', 204)  # статус 204 отправляется без сообщения

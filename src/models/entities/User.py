@@ -22,10 +22,10 @@ class User:
 
 
 class Default_user(User):
-    def __init__(self, userId, login, hashPassword) -> None:
-        self.userId = userId
+    def __init__(self, login, hashPassword) -> None:
         self.login = login
         self.hashPassword = hashPassword
+        self.userId = None
         self.role = 'd'
 
     def show(self, search='', sort='', typeSort='', obj_filters={}):
@@ -39,7 +39,8 @@ class Default_user(User):
         listOfContacts = ContactsModel.make_obj_contacts(columns, obj_data['contacts'])
         return {'contacts': listOfContacts, 'err': ''}
 
-    def delete(self, id):
+    def delete(self, contact_id, holder_id):
+        if holder_id != self.userId: return 'Недопустимое значение "holder"! Укажите свой id клиента или не используйте в запросе.'
         ContactsModel.delete_contact(id, self.userid)
 
     def add_contact(self, new_contact):
@@ -57,11 +58,11 @@ class Default_user(User):
 
 class Admin(User):
 
-    def __init__(self, userId, login, hashPassword) -> None:
-        self.userId = userId
+    def __init__(self, login, hashPassword) -> None:
         self.login = login
         self.hashPassword = hashPassword
         self.role = 'a'
+        self.userId = None
 
     def show(self, search='', sort='', typeSort='', obj_filters={}):
         columns = ['id', 'name', 'last_name', 'patronymic', 'organization', 'post', 'email', 'phone', 'deleted']
@@ -72,8 +73,8 @@ class Admin(User):
 
 
 
-    def delete(id):
-        ContactsModel.delete_contact(id)
+    def delete(contact_id, holder_id):
+        return ContactsModel.delete_contact(contact_id, holder_id)
 
 
     def add_contact(self, new_contact):
