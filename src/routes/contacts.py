@@ -1,4 +1,5 @@
 from flask import Blueprint, request, abort, make_response
+import json
 
 main = Blueprint('contacts_blueprint', __name__)
 
@@ -33,12 +34,15 @@ def authentication(f):
 @main.route('/show', methods=['POST'])
 @authentication
 def show(user):
-    search = 'Олег'
-    sort = ''
-    typeSort = ''
-    obj_filters = None
-
-    data = user.show(search, sort, typeSort, obj_filters)
+    dict_params = {'search': '', 'sort': '', 'typeSort': '', 'filters': None}
+    for parametr in request.form:
+        if not (parametr in dict_params):
+            abort(make_response(f'Неизвестный параметр: "{parametr}"', 400))
+        if parametr == 'filters':
+            dict_params[parametr] = json.loads(request.form[parametr])
+            continue
+        dict_params[parametr] = request.form[parametr]
+    data = user.show(dict_params['search'], dict_params['sort'], dict_params['typeSort'], dict_params['filters'])
     if data['err']: abort(data['err'], 500)
     return data['contacts']
 
@@ -47,7 +51,7 @@ def show(user):
 @authentication
 def add(user):
     # проверка корректности запроса
-    MAY_EXIST = ['name', 'last_name', 'patronymic', 'organization', 'post', 'email', 'phone', ]
+    MAY_EXIST = ['name', 'last_name', 'patronymic', 'organization', 'post', 'email', 'phone', 'holder' ]
     for parametr in request.form:
         if not (parametr in MAY_EXIST):
             abort(make_response(f'Неизвестный параметр: "{parametr}"', 400))

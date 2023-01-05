@@ -37,25 +37,27 @@ class ContactsModel:
             str_filter = ''
             for parametr in obj_filters:
                 if str_filter: str_filter += ' AND '
-                str_filter += f'{parametr} = {obj_filters[parametr]} '
+                str_filter += f"{parametr} = '{obj_filters[parametr]}' "
         str_sort = ''
-        if sort:
-            str_sort = 'ORDER BY ' + sort
-            if typeSort == 'revers':
-                str_sort += 'DESC'
+
         str_search = ''
         if search:
             str_search = f"tsv @@ plainto_tsquery('russian', '{search}');"
-
         str_SQL = ''
-        if str_filter: str_SQL + str_filter
-        if str_sort:
-            if str_SQL: str_SQL += ' AND '
-            str_SQL += str_sort
+        if str_filter:
+            str_SQL += str_filter
         if str_search:
             if str_SQL: str_SQL += ' AND '
             str_SQL += str_search
         if str_SQL: str_SQL = ' WHERE ' + str_SQL
+
+        # то что не требует WHERE и AND:
+        if sort:
+            str_sort = ' ORDER BY ' + sort
+            if typeSort == 'reverse':
+                str_sort += ' DESC'
+        if str_sort:
+            str_SQL += str_sort
 
         try:
             connection = get_connection()

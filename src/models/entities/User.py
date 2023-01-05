@@ -28,7 +28,7 @@ class Default_user(User):
         self.hashPassword = hashPassword
         self.role = 'd'
 
-    def show(self, search = '', sort = '', typeSort = '', obj_filters = {}):
+    def show(self, search='', sort='', typeSort='', obj_filters={}):
 
         columns = ['id', 'name', 'last_name', 'patronymic', 'organization', 'post', 'email', 'phone'] # ограничиваю доступную информацию
         obj_filters.fk_holder_id = self.userId  # искать только среди контактов пользователя
