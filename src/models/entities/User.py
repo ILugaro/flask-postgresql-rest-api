@@ -39,22 +39,20 @@ class Default_user(User):
         listOfContacts = ContactsModel.make_obj_contacts(columns, obj_data['contacts'])
         return {'contacts': listOfContacts, 'err': ''}
 
-    def delete(self, contact_id, holder_id):
-        if holder_id != self.userId: return 'Недопустимое значение "holder"! Укажите свой id клиента или не используйте в запросе.'
-        ContactsModel.delete_contact(id, self.userid)
+    def delete(self, contact_id):
+        ContactsModel.delete_contact(id, self.userId)
 
     def add_contact(self, new_contact):
         if new_contact.holder and not new_contact.holder == self.userId: 'Недопустимое значение "holder"! Укажите свой id клиента или не используйте в запросе.'
         new_contact.holder = self.userId
         return ContactsModel.add_contact(contact=new_contact)
 
-    def change_contact(self, contact, key):
-        if not contact.holder:
-            contact.holder = self.userId
-        elif not contact.holder == self.userId:
-            return "Невозможно изменить контакт другого пользователя"
-        ContactsModel.contact(contact, key)
 
+    # list_parametrs = []  # список параметров которые необходимо изменить
+    # list_values = () соответствующие им значения
+    def update_contact(self, contact_id, dict_parametrs):
+        '''Измененние существующего контакта по набору параметров'''
+        ContactsModel.update_contact(contact_id, dict_parametrs, self.userId)
 
 class Admin(User):
 
@@ -73,13 +71,17 @@ class Admin(User):
 
 
 
-    def delete(contact_id, holder_id):
-        return ContactsModel.delete_contact(contact_id, holder_id)
+    def delete(self, contact_id):
+        ContactsModel.show_contascts()
+        return ContactsModel.delete_contact(contact_id)
 
 
     def add_contact(self, new_contact):
         if not new_contact.holder: new_contact.holder = self.userId
         return ContactsModel.add_contact(contact=new_contact)
 
-    def change_contact(contact, key):
-        ContactsModel.contact(contact, key)
+    # list_parametrs = []  # список параметров которые необходимо изменить
+    # list_values = () соответствующие им значения
+    def update_contact(self, contact_id, dict_parametrs):
+        '''Измененние существующего контакта по набору параметров'''
+        ContactsModel.update_contact(contact_id, dict_parametrs)

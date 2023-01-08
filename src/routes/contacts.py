@@ -76,6 +76,35 @@ def add(user):
 @main.route('/<contact_id>', methods=['DELETE'])
 @authentication
 def delete(user, contact_id):
-    err = user.delete(contact_id, request.args.get('holder'))
+    err = user.delete(contact_id)
     if err: abort(make_response(str(err), 400))
     return ('', 204)  # статус 204 отправляется без сообщения
+
+@main.route('/<contact_id>', methods=['PUT'])
+@authentication
+def update_contact(user, contact_id):
+
+    dict_parametrs = {}
+    temp_contact = Contact()
+
+    # проверка корректности запроса
+    MAY_EXIST = ['name', 'last_name', 'patronymic', 'organization', 'post', 'email', 'phone', 'holder']
+    for parametr in request.form:
+        if not (parametr in MAY_EXIST):
+            abort(make_response(f'Неизвестный параметр: "{parametr}"', 400))
+
+        if parametr == 'phone':
+            err = temp_contact.setPhone(request.form[parametr])  # вернет None в случае успеха
+            if err: abort(make_response(err, 400))
+            dict_parametrs[parametr] = temp_contact.getPhone()
+            continue
+        if parametr == 'email':
+            err = temp_contact.setEmail(request.form[parametr])  # вернет None в случае успеха
+            if err: abort(make_response(err, 400))
+            dict_parametrs[parametr] = temp_contact.getEmail()
+            continue
+        dict_parametrs[parametr] = request.form[parametr]
+
+    err = user.update_contact(contact_id, dict_parametrs)
+    if err: abort(make_response(str(err), 400))
+    return (f'Контакт id {contact_id} был изменен.', 200)

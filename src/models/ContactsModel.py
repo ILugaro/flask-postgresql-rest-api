@@ -18,12 +18,19 @@ class ContactsModel:
             print(ex)
             return ex
 
-    def delete_contact(self, id, holder):
+    def delete_contact(id, holder=None):
+        '''
+        Удаляет контакт по его id. holder - это id пользователя кто владеет контактом (защита от удаления чужих контактов)
+        Если holder не указан (то есть holder='*') - защита удаления чужих контактов не задействована
+        '''
+        str_SQL = f"DELETE FROM contacts WHERE id = {id}"
+        if holder: str_SQL+=f"AND holder_id = {holder}"
         try:
             connection = get_connection()
             with connection.cursor() as cursor:
-                cursor.execute("DELETE FROM user WHERE id = %s AND fk_holder_id = %s", (id, holder))
+                cursor.execute(str_SQL)
                 connection.commit()
+                if cursor.statusmessage == 'DELETE 0': return f'Удаление контакта с id "{id}" не удалось. Проверьте корректность указанного id контакта'
             return None
         except Exception as ex:
             print(ex)
@@ -62,7 +69,6 @@ class ContactsModel:
         try:
             connection = get_connection()
             with connection.cursor() as cursor:
-                print('SELECT ' + columns + ' FROM contacts' + str_SQL)
                 cursor.execute("SELECT " + columns + " FROM contacts" + str_SQL)
                 rows = cursor.fetchall()
             return {'contacts': rows, 'err': ''}
@@ -93,3 +99,24 @@ class ContactsModel:
                 column += 1
             obj_contacts.append(obj)
         return obj_contacts
+
+    def update_contact(contact_id, dict_parametrs, holder=None):
+        '''
+        Изменяет контакт по его id. holder - это id пользователя кто владеет контактом (защита от изменения чужих контактов)
+        Если holder не указан (то есть holder='*') - защита удаления чужих контактов не задействована
+        '''
+        str_SQL = f'UPDATE contacts SET '
+        for parametr in dict_parametrs:
+            str_SQL += f"{parametr} = '{dict_parametrs[parametr]}',"
+        str_SQL = str_SQL[:-1] + f' WHERE id = {contact_id}'
+        if holder: str_SQL += f' AND holder_ = {holder}'
+        try:
+            connection = get_connection()
+            with connection.cursor() as cursor:
+                cursor.execute(str_SQL)
+                connection.commit()
+                if cursor.statusmessage == "UPDATE 0": return f'Невозможно выполнить изменение контакта "{contact_id}". Проверьте корректность id.'
+            return None
+        except Exception as ex:
+            print(ex)
+            return ex
