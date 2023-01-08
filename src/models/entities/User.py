@@ -1,17 +1,8 @@
 from models.ContactsModel import ContactsModel
 from werkzeug.security import generate_password_hash, check_password_hash
+from abc import ABC, abstractmethod
 
-
-class User:
-
-    def show(self):
-        raise NotImplementError(f'В дочернем классе должен быть метод {self.__name__}')
-
-    def delete(self):
-        raise NotImplementError(f'В дочернем классе должен быть метод {self.__name__}')
-
-    def change(self):
-        raise NotImplementError(f'В дочернем классе должен быть метод {self.__name__}')
+class User(ABC):
 
     def make_hashPassword(password):
         return generate_password_hash(password, method='pbkdf2:sha256', salt_length=8)
@@ -19,15 +10,36 @@ class User:
     def check_password(self, password):
         return check_password_hash(self.hashPassword, password)
 
+    '''Абстрактные методы класса'''
+
+    @abstractmethod
+    def show(self, search='', sort='', typeSort='', obj_filters={}):
+        pass
+    @abstractmethod
+    def delete(self, contact_id):
+        pass
+    @abstractmethod
+    def update_contact(self, contact_id, dict_parametrs):
+        pass
+    @abstractmethod
+    def add_contact(self, new_contact):
+        pass
+
 
 
 class Default_user(User):
+    '''Класс обычного пользователя со стандартными правами'''
     def __init__(self, login, hashPassword) -> None:
         self.login = login
         self.hashPassword = hashPassword
         self.userId = None
         self.role = 'd'
 
+    # search - строка полнотекстового поиска
+    # sort - параметр по которому происходит сортировка
+    # typeSort - тип сортировки (reverse/standart)
+    # obj_filters - словарь для фильтрации контактов, где ключ это параметр (имя столбца таблицы SQL), а значение - критерий фильтрации.
+    #    Контакт проходит отбор при полном соответствии требуемому значению.
     def show(self, search='', sort='', typeSort='', obj_filters={}):
 
         columns = ['id', 'name', 'last_name', 'patronymic', 'organization', 'post', 'email', 'phone'] # ограничиваю доступную информацию
@@ -40,7 +52,7 @@ class Default_user(User):
         return {'contacts': listOfContacts, 'err': ''}
 
     def delete(self, contact_id):
-        ContactsModel.delete_contact(id, self.userId)
+        return ContactsModel.delete_contact(id, self.userId)
 
     def add_contact(self, new_contact):
         if new_contact.holder and not new_contact.holder == self.userId: 'Недопустимое значение "holder"! Укажите свой id клиента или не используйте в запросе.'
@@ -52,7 +64,7 @@ class Default_user(User):
     # list_values = () соответствующие им значения
     def update_contact(self, contact_id, dict_parametrs):
         '''Измененние существующего контакта по набору параметров'''
-        ContactsModel.update_contact(contact_id, dict_parametrs, self.userId)
+        return ContactsModel.update_contact(contact_id, dict_parametrs, self.userId)
 
 class Admin(User):
 
@@ -62,6 +74,11 @@ class Admin(User):
         self.role = 'a'
         self.userId = None
 
+    # search - строка полнотекстового поиска
+    # sort - параметр по которому происходит сортировка
+    # typeSort - тип сортировки (reverse/standart)
+    # obj_filters - словарь для фильтрации контактов, где ключ это параметр (имя столбца таблицы SQL), а значение - критерий фильтрации.
+    #    Контакт проходит отбор при полном соответствии требуемому значению.
     def show(self, search='', sort='', typeSort='', obj_filters={}):
         columns = ['id', 'name', 'last_name', 'patronymic', 'organization', 'post', 'email', 'phone', 'deleted']
         obj_data = ContactsModel.show_contascts(columns, search, sort, typeSort, obj_filters)
@@ -69,10 +86,7 @@ class Admin(User):
         listOfContacts = ContactsModel.make_obj_contacts(columns ,obj_data['contacts'])
         return {'contacts': listOfContacts, 'err': ''}
 
-
-
     def delete(self, contact_id):
-        ContactsModel.show_contascts()
         return ContactsModel.delete_contact(contact_id)
 
 
@@ -84,4 +98,4 @@ class Admin(User):
     # list_values = () соответствующие им значения
     def update_contact(self, contact_id, dict_parametrs):
         '''Измененние существующего контакта по набору параметров'''
-        ContactsModel.update_contact(contact_id, dict_parametrs)
+        return ContactsModel.update_contact(contact_id, dict_parametrs)

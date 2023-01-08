@@ -41,6 +41,9 @@ def show(user):
         if parametr == 'filters':
             dict_params[parametr] = json.loads(request.form[parametr])
             continue
+        if parametr == 'typeSort':
+            if not 'sort' in request.form: abort(make_response('Указан "typeSort" без указания параметра "sort"', 400))
+            if not (request.form['typeSort'] == 'standart' or 'reverse'): return abort(make_response('Недопустимое значение "typeSort". Укажите "standart" или "reverse".', 400))
         dict_params[parametr] = request.form[parametr]
     data = user.show(dict_params['search'], dict_params['sort'], dict_params['typeSort'], dict_params['filters'])
     if data['err']: abort(data['err'], 500)

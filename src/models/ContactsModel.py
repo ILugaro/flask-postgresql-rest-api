@@ -115,6 +115,7 @@ class ContactsModel:
             with connection.cursor() as cursor:
                 cursor.execute(str_SQL)
                 connection.commit()
+                print(cursor.statusmessage)
                 if cursor.statusmessage == "UPDATE 0": return f'Невозможно выполнить изменение контакта "{contact_id}". Проверьте корректность id.'
             return None
         except Exception as ex:
