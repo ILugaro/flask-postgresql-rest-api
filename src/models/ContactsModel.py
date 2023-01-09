@@ -100,6 +100,7 @@ class ContactsModel:
             obj_contacts.append(obj)
         return obj_contacts
 
+    @staticmethod
     def update_contact(contact_id, dict_parametrs, holder=None):
         '''
         Изменяет контакт по его id. holder - это id пользователя кто владеет контактом (защита от изменения чужих контактов)
@@ -115,9 +116,21 @@ class ContactsModel:
             with connection.cursor() as cursor:
                 cursor.execute(str_SQL)
                 connection.commit()
-                print(cursor.statusmessage)
                 if cursor.statusmessage == "UPDATE 0": return f'Невозможно выполнить изменение контакта "{contact_id}". Проверьте корректность id.'
             return None
         except Exception as ex:
             print(ex)
             return ex
+
+    @staticmethod
+    def clear_contacts():
+        try:
+            connection = get_connection()
+            with connection.cursor() as cursor:
+                cursor.execute('TRUNCATE contacts')
+                connection.commit()
+            return None
+        except Exception as ex:
+            print(ex)
+            return ex
+

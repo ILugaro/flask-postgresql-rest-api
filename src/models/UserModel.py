@@ -11,7 +11,7 @@ class UserModel:
         try:
             connection = get_connection()
             with connection.cursor() as cursor:
-                cursor.execute("""SELECT id, password, role FROM users WHERE login = %s""", (login,))
+                cursor.execute(f"SELECT id, password, role FROM users WHERE login = '{login}'")
                 row = cursor.fetchone()
             return row
         except Exception as ex:
@@ -38,7 +38,22 @@ class UserModel:
         try:
             connection = get_connection()
             with connection.cursor() as cursor:
-                cursor.execute("DELETE FROM users WHERE login = %s", (login,))
+                cursor.execute(f"DELETE FROM users WHERE login = '{login}'")
+                connection.commit()
+            return None
+        except Exception as ex:
+            print(ex)
+            return ex
+
+    def clear_users(login):
+        """
+        Удаляет ВСЕХ пользователей кроме пользователя login. Возвращает None при успешном удалении или текст ошибки в случае неудачи.
+        ФУНКЦИЯ  ТОЛЬКО ДЛЯ РЕЖИМА DEBUG
+        """
+        try:
+            connection = get_connection()
+            with connection.cursor() as cursor:
+                cursor.execute(f"DELETE FROM users WHERE not login = '{login}'")
                 connection.commit()
             return None
         except Exception as ex:

@@ -79,7 +79,7 @@ def add(user):
 @main.route('/<contact_id>', methods=['DELETE'])
 @authentication
 def delete(user, contact_id):
-    err = user.delete(contact_id)
+    err = user.delete(contact_id) # вернет None в случае успеха
     if err: abort(make_response(str(err), 400))
     return ('', 204)  # статус 204 отправляется без сообщения
 
@@ -108,6 +108,6 @@ def update_contact(user, contact_id):
             continue
         dict_parametrs[parametr] = request.form[parametr]
 
-    err = user.update_contact(contact_id, dict_parametrs)
+    err = user.update_contact(contact_id, dict_parametrs) # вернет None в случае успеха
     if err: abort(make_response(str(err), 400))
     return (f'Контакт id {contact_id} был изменен.', 200)
