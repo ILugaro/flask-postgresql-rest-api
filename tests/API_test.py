@@ -1,41 +1,65 @@
 import requests
+from requests.auth import HTTPBasicAuth
+import json
 
-url = "http://127.0.0.1:5000/api/contacts/add"
+url_contacts = 'http://127.0.0.1:5000/api/contacts'
+url_listUsers = 'http://127.0.0.1:5000/api/userList'
+admin_auth = HTTPBasicAuth('firstAdmin', 'DHsh234ui')
 
-contacts=[{'name': 'Дмитрий',
-'last_name': 'Соколов',
-'patronymic': 'Александрович',
-'organization': 'Стройбуд',
-'email': 'My_mail@gmail.com',
-'phone': '41-52-47',},
-{'name': 'Сергей',
- 'last_name': 'Гордиенко',
- 'patronymic': '',
- 'organization': 'Стройбуд',
- 'post': 'директор'},
-{'name': 'Федор',
-  'last_name': 'Матвиенко',
-  'phone': '70991485536'},
-{'name': 'Ольга',
-  'last_name': 'Федорова',
-  'patronymic': 'Валерьевна',
-  'organization': 'Налоговая',
-  'post': 'Директор',
-  'email': 'testmail@mail.ru'},
-{'organization': 'Монтаж-ГОСТ',
-  'post': 'Слесарь',
-  'phone': '+7(099) 246 1306'},
-{'name': 'Коля',
- 'last_name': 'Соколов',
- 'post': 'Слесарь',
- 'phone': '+7(099) 246 1306'}]
 
-headers = {
-  'Authorization': 'Basic Zmlyc3RBZG1pbjpESHNoMjM0dWk='
-}
+def contact_creator(file, login, password):
+    '''создает базу контактов на основе файла. От имени пользователя login (password - пароль данного клиента)'''
+    with open(file, encoding='utf-8') as f:
+        contacts = json.load(f)
 
-for contact in contacts:
-    response = requests.request("POST", url, headers=headers, data=contact)
-    print(response.text)
+    basic = HTTPBasicAuth(login, password)
+    for contact in contacts:
+        response = requests.request('POST', url_contacts + '/add', data=contact, auth=basic)
+        print(response.text)
+
+'''Очистка БД'''
+response = requests.request('POST', url_listUsers + '/reset', auth=admin_auth)
+response = requests.request('POST', url_contacts + '/show', auth=admin_auth)
+if len(response.json()) == 0:
+    print('База данных очищена')
+else:
+    print('Ошибка при очистке базы данных')
+    exit()
+
+'''Создание дополнительных клиентов'''
+with open('clients.json', encoding='utf-8') as f:
+    clients = json.load(f)
+for client in clients:
+    print(client)
+    response = requests.request('POST', url_listUsers, auth=admin_auth, data=client)
+
+'''Наполнение контактами с файла JSON'''
+contact_creator('contacts_for_DefaultUser1.json', 'DefaultUser1', 'PassUser1')
+contact_creator('contacts_for_DefaultUser2.json', 'DefaultUser2', 'PassUser2')
+
+response = requests.request('POST', url_contacts + '/show', data ={'name': 'Виктор'}, auth=admin_auth)
+
+response = requests.request('DELETE', url_contacts + '/', auth=admin_auth)
+
+print('База данных заполнена')
+
+#тест полнотектового поиска:
+tests = [{'requests':
+            {'target': 'Полнотектовый поиск админом',
+             'data': {'search': ''},
+             'client': {'login': '', 'pass': ''}},
+          'response':
+              {'count': 1,
+               'check_data': {},
+               'status': ''}},
+          {'requests':
+            {'target': 'Полнотектовый поиск админом',
+             'data': {'search': ''},
+             'client': {'login': '', 'pass': ''}},
+          'response':
+              {'count': 1,
+               'check_data': {},
+               'status': ''}}
+         ]
 
 

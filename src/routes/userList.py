@@ -18,7 +18,6 @@ def admin_only(f):
         if not request.authorization: abort(make_response('Требуется basic авторизация по логину и паролю'), 403)
         info_user = UserModel.userInfo(request.authorization["username"])
         if not info_user: abort(make_response('Пользователь не найден'), 403)
-        print(info_user)
         # создания экзампляра Admin или Default_user в зависимости от роли клиента
         if info_user[2] == 'a': user = Admin(request.authorization["username"], 'pbkdf2:sha256:' + info_user[1])
         elif info_user[2] == 'd': user = Default_user(request.authorization["username"], 'pbkdf2:sha256:' + info_user[1])
@@ -41,12 +40,13 @@ def debug_only(f):
 @main.route('/', methods=['POST'])
 @admin_only
 def addNewUser(user):
-    MUST_HAVE = ['login', 'password', 'role'];
+    MUST_HAVE = ['login', 'password'];  # обязательные параметры
+    MAY_HAVE = ['login', 'password', 'role'];  # возможные параметры
     for parametr in MUST_HAVE:
         if not parametr in request.form:
             abort(make_response(f'Отсутствует обязательный параметр: "{parametr}"', 400))
     for parametr in request.form:
-        if not parametr in MUST_HAVE:
+        if not parametr in MAY_HAVE:
             abort(make_response(f'Неизвестный параметр: "{parametr}"', 400))
     login = request.form['login']
     if UserModel.userInfo(login): abort((make_response(f'Пользователь с  логином {login} уже существует!')), 400)
@@ -57,7 +57,8 @@ def addNewUser(user):
     if password.isdigit():
         abort((make_response('Пароль не должен состоять только из цифр!')), 400)
 
-    role = request.form['role']
+    if 'role' in request.form: role = request.form['role']
+    else: role = 'd'  # по умолчанию пользователь з дефолтными правами
 
     if role == 'a':
         newUser = Admin(login, User.make_hashPassword(password))
@@ -67,7 +68,7 @@ def addNewUser(user):
         abort((make_response('Значение "role" может быть только "d"(client) или "a"(admin)')), 400)
 
     err = UserModel.addNewUser(newUser)
-    if err: abort(make_response(err), 500)
+    if err: abort(make_response(str(err)), 500)
     return (f'Пользователь {newUser.login} добавлен.', 201)
 
 
@@ -77,7 +78,7 @@ def delUser(user, login):
     if not UserModel.userInfo(login):
         abort((make_response(f'Пользователь с логином {login} отсутствует!')), 400)
     err = UserModel.delUser(login)  # вернет None в случае успеха
-    if err: abort(make_response(err), 500)
+    if err: abort(make_response(str(err)), 500)
     return ('', 204)  # статус 204 отправляется без сообщения
 
 
@@ -87,8 +88,8 @@ def delUser(user, login):
 @admin_only
 def reset(user):
     '''Используеться для тестирования, только в режиме DEBUG (файл config.py). Удаляет все контакты и всех клиентов кроме клиента выполняющего данный запрос'''
-    err = UserModel.clear_users(user.login) # вернет None в случае успеха
-    if err: abort(make_response(err), 500)
     err = ContactsModel.clear_contacts()  # вернет None в случае успеха
-    if err: abort(make_response(err), 500)
+    if err: abort(make_response(str(err)), 500)
+    err = UserModel.clear_users(user.login) # вернет None в случае успеха
+    if err: abort(make_response(str(err)), 500)
     return ('База данных очищена.', 200)

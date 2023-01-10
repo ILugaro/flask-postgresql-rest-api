@@ -44,7 +44,7 @@ class ContactsModel:
             str_filter = ''
             for parametr in obj_filters:
                 if str_filter: str_filter += ' AND '
-                str_filter += f"{parametr} = '{obj_filters[parametr]}' "
+                str_filter += f"{parametr} ~* '{obj_filters[parametr]}' "
         str_sort = ''
 
         str_search = ''

@@ -21,7 +21,7 @@ def authentication(f):
         if info_user[2] == 'a':
             user = Admin(request.authorization["username"], 'pbkdf2:sha256:' + info_user[1])
         elif info_user[2] == 'd':
-            user = Default_user(info_user[0], request.authorization["username"], 'pbkdf2:sha256:' + info_user[1])
+            user = Default_user(request.authorization["username"], 'pbkdf2:sha256:' + info_user[1])
         user.userId = info_user[0]
         if not user.check_password(request.authorization["password"]): abort(make_response('Неверный пароль'), 403)
 
@@ -63,11 +63,11 @@ def add(user):
     for parametr in request.form:
         if parametr == 'phone':
             err = new_contact.setPhone(request.form[parametr])  # вернет None в случае успеха
-            if err: abort(make_response(err, 400))
+            if err: abort(make_response(str(err), 400))
             continue
         if parametr == 'email':
             err = new_contact.setEmail(request.form[parametr]) # вернет None в случае успеха
-            if err: abort(make_response(err, 400))
+            if err: abort(make_response(str(err), 400))
             continue
         new_contact[parametr] = request.form[parametr]
 
@@ -98,12 +98,12 @@ def update_contact(user, contact_id):
 
         if parametr == 'phone':
             err = temp_contact.setPhone(request.form[parametr])  # вернет None в случае успеха
-            if err: abort(make_response(err, 400))
+            if err: abort(make_response(str(err), 400))
             dict_parametrs[parametr] = temp_contact.getPhone()
             continue
         if parametr == 'email':
             err = temp_contact.setEmail(request.form[parametr])  # вернет None в случае успеха
-            if err: abort(make_response(err, 400))
+            if err: abort(make_response(str(err), 400))
             dict_parametrs[parametr] = temp_contact.getEmail()
             continue
         dict_parametrs[parametr] = request.form[parametr]
