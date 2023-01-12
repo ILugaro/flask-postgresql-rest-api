@@ -54,7 +54,9 @@ class Default_user(User):
 
         obj_data = ContactsModel.show_contascts(columns, search, sort, typeSort, obj_filters)
         if obj_data['err']: return obj_data
+        print(1111, obj_data['contacts'])
         listOfContacts = ContactsModel.make_obj_contacts(columns, obj_data['contacts'])
+        print(222, listOfContacts)
         return {'contacts': listOfContacts, 'err': ''}
 
     def delete(self, contact_id):
@@ -95,7 +97,7 @@ class Admin(User):
         columns = ['id', 'name', 'last_name', 'patronymic', 'organization', 'post', 'email', 'phone', 'deleted', 'holder_id']
         obj_data = ContactsModel.show_contascts(columns, search, sort, typeSort, obj_filters)
         if obj_data['err']: return obj_data
-        listOfContacts = ContactsModel.make_obj_contacts(columns ,obj_data['contacts'])
+        listOfContacts = ContactsModel.make_obj_contacts(columns, obj_data['contacts'])
         return {'contacts': listOfContacts, 'err': ''}
 
     def delete(self, contact_id):

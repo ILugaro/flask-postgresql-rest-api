@@ -75,6 +75,7 @@ class ContactsModel:
             with connection.cursor() as cursor:
                 cursor.execute("SELECT " + columns + " FROM contacts" + str_SQL)
                 rows = cursor.fetchall()
+                print(rows)
             return {'contacts': rows, 'err': ''}
         except Exception as ex:
             print(ex)
@@ -83,6 +84,7 @@ class ContactsModel:
 
     @staticmethod
     def make_obj_contacts(list_columns, list_contacts):
+        '''Делает из полученных от SQL данных именованный массив в формате выдачи.'''
         obj_contacts = []
         len_columns = len(list_columns)
 
@@ -106,7 +108,7 @@ class ContactsModel:
         for parametr in dict_parametrs:
             str_SQL += f"{parametr} = '{dict_parametrs[parametr]}',"
         str_SQL = str_SQL[:-1] + f' WHERE id = {contact_id}'
-        if holder: str_SQL += f' AND holder_ = {holder}'
+        if holder: str_SQL += f' AND holder_id = {holder}'
         try:
             connection = get_connection()
             with connection.cursor() as cursor:

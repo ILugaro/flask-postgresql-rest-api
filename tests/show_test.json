@@ -1,0 +1,26 @@
+[{"requests":
+    {"target": "Полнотекстовый поиск админом.",
+        "data": {"search": ""},
+        "client": {"login": "Admin2", "pass": "Qwerty123"}},
+    "response":
+        {"count": 1,
+        "check_data": {},
+        "status": ""}},
+{"requests":
+    {"target": "Полнотекстовый поиск стандартным пользователем.",
+        "data": {"search": ""},
+        "client": {"login": "", "pass": ""}},
+    "response":
+        {"count": 1,
+        "check_data": {},
+        "status": ""}
+    },
+{"requests":
+    {"target": "Полнотекстовый поиск админом",
+        "data": {"search": ""},
+        "client": {"login": "Admin2", "pass": "Qwerty123"}},
+    "response":
+        {"count": 1,
+        "check_data": {},
+        "status": ""}}
+]
