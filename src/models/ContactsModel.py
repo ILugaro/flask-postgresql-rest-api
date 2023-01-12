@@ -18,9 +18,10 @@ class ContactsModel:
             print(ex)
             return ex
 
-    def delete_contact(id, holder=None):
+
+    def delete_contact_irrevocably(id, holder=None):
         '''
-        Удаляет контакт по его id. holder - это id пользователя кто владеет контактом (защита от удаления чужих контактов)
+        Удаляет контакт из БД по его id. holder - это id пользователя кто владеет контактом (защита от удаления чужих контактов)
         Если holder не указан (то есть holder='*') - защита удаления чужих контактов не задействована
         '''
         str_SQL = f"DELETE FROM contacts WHERE id = {id}"
@@ -44,6 +45,9 @@ class ContactsModel:
             str_filter = ''
             for parametr in obj_filters:
                 if str_filter: str_filter += ' AND '
+                if parametr == 'deleted' or parametr == 'holder_id':  # отдельное условие сравнения для служебных параметров
+                    str_filter += f"{parametr} = '{obj_filters[parametr]}' "
+                    continue
                 str_filter += f"{parametr} ~* '{obj_filters[parametr]}' "
         str_sort = ''
 
@@ -76,14 +80,6 @@ class ContactsModel:
             print(ex)
             return {'contacts': None, 'err': ex}
 
-    def change_contact(self, contact, key):
-
-        try:
-            connection = get_connection()
-
-        except Exception as ex:
-            print(ex)
-            return ex
 
     @staticmethod
     def make_obj_contacts(list_columns, list_contacts):

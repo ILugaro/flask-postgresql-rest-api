@@ -16,8 +16,11 @@ from config import DevelopmentConfig
 def admin_only(f):
     def wrapper(*args, **kwargs):
         if not request.authorization: abort(make_response('Требуется basic авторизация по логину и паролю'), 403)
-        info_user = UserModel.userInfo(request.authorization["username"])
+        dict_info_user = UserModel.userInfo(request.authorization["username"])
+        if dict_info_user['err']: abort(make_response(dict_info_user['err']), 500)
+        info_user = dict_info_user['data']
         if not info_user: abort(make_response('Пользователь не найден'), 403)
+
         # создания экзампляра Admin или Default_user в зависимости от роли клиента
         if info_user[2] == 'a': user = Admin(request.authorization["username"], 'pbkdf2:sha256:' + info_user[1])
         elif info_user[2] == 'd': user = Default_user(request.authorization["username"], 'pbkdf2:sha256:' + info_user[1])
@@ -49,7 +52,9 @@ def addNewUser(user):
         if not parametr in MAY_HAVE:
             abort(make_response(f'Неизвестный параметр: "{parametr}"', 400))
     login = request.form['login']
-    if UserModel.userInfo(login): abort((make_response(f'Пользователь с  логином {login} уже существует!')), 400)
+    dict_info_user = UserModel.userInfo(login)
+    if dict_info_user['err']: abort(make_response(dict_info_user['err']), 500)
+    if dict_info_user['data']: abort((make_response(f'Пользователь с  логином {login} уже существует!')), 400)
 
     password = request.form['password']
     if len(password) < 6:
@@ -75,12 +80,13 @@ def addNewUser(user):
 @main.route('/<login>', methods=['DELETE'])
 @admin_only
 def delUser(user, login):
-    if not UserModel.userInfo(login):
+    dict_info_user = UserModel.userInfo(login)
+    if dict_info_user['err']: abort(make_response(dict_info_user['err']), 500)
+    if not dict_info_user['data']:
         abort((make_response(f'Пользователь с логином {login} отсутствует!')), 400)
     err = UserModel.delUser(login)  # вернет None в случае успеха
     if err: abort(make_response(str(err)), 500)
     return ('', 204)  # статус 204 отправляется без сообщения
-
 
 
 @main.route('/reset', methods=['POST'])

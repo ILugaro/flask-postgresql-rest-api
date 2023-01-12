@@ -14,8 +14,10 @@ from models.entities.Contact import Contact
 def authentication(f):
     def wrapper(*args, **kwargs):
         if not request.authorization: abort(make_response('Требуется basic авторизация по логину и паролю'), 403)
-        info_user = UserModel.userInfo(request.authorization["username"])
-        if not info_user: abort(make_response('Пользователь не найден'), 403)
+        dict_info_user = UserModel.userInfo(request.authorization["username"])
+        if dict_info_user['err']: abort(make_response(dict_info_user['err']), 500)
+        info_user = dict_info_user['data']
+        if not info_user: abort(make_response('Неверный логин'), 403)
 
         # создания экзампляра Admin или Default_user в зависимости от роли клиента
         if info_user[2] == 'a':
@@ -76,10 +78,14 @@ def add(user):
     return (f'Новый контакт добавлен.', 201)
 
 
+
 @main.route('/<contact_id>', methods=['DELETE'])
 @authentication
 def delete(user, contact_id):
-    err = user.delete(contact_id) # вернет None в случае успеха
+    if 'irrevocable' in request.form and request.form['irrevocable']:  # если запрашивается безвозвратное удаление
+        err = user.delete_contact_irrevocably(contact_id) # вернет None в случае успеха
+    else:
+        err = user.delete(contact_id) # вернет None в случае успеха
     if err: abort(make_response(str(err), 400))
     return ('', 204)  # статус 204 отправляется без сообщения
 
@@ -91,7 +97,7 @@ def update_contact(user, contact_id):
     temp_contact = Contact()
 
     # проверка корректности запроса
-    MAY_EXIST = ['name', 'last_name', 'patronymic', 'organization', 'post', 'email', 'phone', 'holder']
+    MAY_EXIST = ['name', 'last_name', 'patronymic', 'organization', 'post', 'email', 'phone', 'holder_id']
     for parametr in request.form:
         if not (parametr in MAY_EXIST):
             abort(make_response(f'Неизвестный параметр: "{parametr}"', 400))

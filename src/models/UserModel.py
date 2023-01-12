@@ -13,10 +13,10 @@ class UserModel:
             with connection.cursor() as cursor:
                 cursor.execute(f"SELECT id, password, role FROM users WHERE login = '{login}'")
                 row = cursor.fetchone()
-            return row
+            return {'data': row, 'err': ''}
         except Exception as ex:
             print(ex)
-            return ex
+            return {'data': None, 'err': str(ex)}
 
     @classmethod
     def addNewUser(self, user):

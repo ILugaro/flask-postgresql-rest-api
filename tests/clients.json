@@ -1,8 +1,0 @@
-[{"login": "Admin2",
- "password": "Qwerty123",
- "role": "a"},
- {"login": "DefaultUser1",
- "password": "PassUser1",
- "role": "d"},
- {"login": "DefaultUser2",
- "password": "PassUser2"}]

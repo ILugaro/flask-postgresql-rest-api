@@ -3,7 +3,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from abc import ABC, abstractmethod
 
 class User(ABC):
-
+    @staticmethod
     def make_hashPassword(password):
         return generate_password_hash(password, method='pbkdf2:sha256', salt_length=8)
 
@@ -18,12 +18,18 @@ class User(ABC):
     @abstractmethod
     def delete(self, contact_id):
         pass
+
+    @abstractmethod
+
+    def delete_contact_irrevocably(contact_id):
+        pass
     @abstractmethod
     def update_contact(self, contact_id, dict_parametrs):
         pass
     @abstractmethod
     def add_contact(self, new_contact):
         pass
+
 
 
 
@@ -43,8 +49,8 @@ class Default_user(User):
     def show(self, search='', sort='', typeSort='', obj_filters={}):
 
         columns = ['id', 'name', 'last_name', 'patronymic', 'organization', 'post', 'email', 'phone'] # ограничиваю доступную информацию
-        obj_filters.fk_holder_id = self.userId  # искать только среди контактов пользователя
-        obj_filters.deleted = False  # не показывать удаленные контакты
+        obj_filters['holder_id'] = self.userId  # искать только среди контактов пользователя
+        obj_filters['deleted'] = False  # не показывать удаленные контакты
 
         obj_data = ContactsModel.show_contascts(columns, search, sort, typeSort, obj_filters)
         if obj_data['err']: return obj_data
@@ -52,7 +58,12 @@ class Default_user(User):
         return {'contacts': listOfContacts, 'err': ''}
 
     def delete(self, contact_id):
-        return ContactsModel.delete_contact(id, self.userId)
+        '''Делает для контакта статус "удален", но не удаляет из БД'''
+        return ContactsModel.update_contact(contact_id, {'deleted': True}, self.userId)
+    @staticmethod
+    def delete_contact_irrevocably():
+        '''Безвозвратное удаление'''
+        return 'Операция недоступна для пользователя со стандартными правами.'
 
     def add_contact(self, new_contact):
         if new_contact.holder and not new_contact.holder == self.userId: 'Недопустимое значение "holder"! Укажите свой id клиента или не используйте в запросе.'
@@ -64,6 +75,7 @@ class Default_user(User):
     # list_values = () соответствующие им значения
     def update_contact(self, contact_id, dict_parametrs):
         '''Измененние существующего контакта по набору параметров'''
+        if 'holder_id' in dict_parametrs: return 'Операция недоступна для пользователя со стандартными правами.'
         return ContactsModel.update_contact(contact_id, dict_parametrs, self.userId)
 
 class Admin(User):
@@ -87,8 +99,13 @@ class Admin(User):
         return {'contacts': listOfContacts, 'err': ''}
 
     def delete(self, contact_id):
-        return ContactsModel.delete_contact(contact_id)
+        '''Делает для контакта статус "удален", но не удаляет из БД'''
+        return ContactsModel.update_contact(contact_id, {'deleted': True})
 
+    @staticmethod
+    def delete_contact_irrevocably(contact_id, holder_id=None):
+        '''Безвозвратное удаление'''
+        return ContactsModel.delete_contact_irrevocably(contact_id, holder_id)
 
     def add_contact(self, new_contact):
         if not new_contact.holder: new_contact.holder = self.userId
