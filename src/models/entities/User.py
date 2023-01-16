@@ -20,7 +20,6 @@ class User(ABC):
         pass
 
     @abstractmethod
-
     def delete_contact_irrevocably(contact_id):
         pass
     @abstractmethod
@@ -65,6 +64,7 @@ class Default_user(User):
         return 'Операция недоступна для пользователя со стандартными правами.'
 
     def add_contact(self, new_contact):
+        '''добавление нового контакта'''
         if new_contact.holder and not new_contact.holder == self.userId: 'Недопустимое значение "holder"! Укажите свой id клиента или не используйте в запросе.'
         new_contact.holder = self.userId
         return ContactsModel.add_contact(contact=new_contact)
@@ -107,6 +107,7 @@ class Admin(User):
         return ContactsModel.delete_contact_irrevocably(contact_id, holder_id)
 
     def add_contact(self, new_contact):
+        '''добавление нового контакта'''
         if not new_contact.holder: new_contact.holder = self.userId
         return ContactsModel.add_contact(contact=new_contact)
 

@@ -1,3 +1,17 @@
+'''
+Тестирование работает только в режиме DEBUG (параметр в файле config.py)
+При старте тестирования происходит очистка существующей БД и создается тестовая БД
+contacts_for_DefaultUser1.json - база контактов для первого пользователя
+contacts_for_DefaultUser2.json - база контактов для второго пользователя
+show_test.json - список тестов для POST запроса получения контактов
+Структура  show_test.json:
+    Каждый словарь - это POST запрос.
+    request - это имя теста(target) и выходные данные (запрос и логин/пароль пользователя)
+    response - это ожидаемый ответ.
+        count - количество контактов в ответе,
+        check_data - обязательный параметр в каждом контакте
+        status - полученный http код
+'''
 import requests
 from requests.auth import HTTPBasicAuth
 import json
@@ -94,4 +108,6 @@ for task in show_tests:
         print(err)
         exit()
 
+print()
+print('Тестирование успешно звершено.')
 

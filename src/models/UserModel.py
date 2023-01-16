@@ -45,6 +45,7 @@ class UserModel:
             print(ex)
             return ex
 
+    @staticmethod
     def clear_users(login):
         """
         Удаляет ВСЕХ пользователей кроме пользователя login. Возвращает None при успешном удалении или текст ошибки в случае неудачи.

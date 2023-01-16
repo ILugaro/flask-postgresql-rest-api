@@ -1,3 +1,34 @@
+ОПИСАНИЕ ЗАПРОСОВ:
+
+Все запросы требуют Basic авторизацию:
+
+showContacts (POST api/contacts/show) - получение контактов.
+ Параметры:
+	search - строка полнотекстового поиска для ИФО
+	sort - параметр по которому будет происходить сортировка
+	typeSort - тип сортировки, standart или reverse
+	filters - Именованный массив для фильтрации, где ключ - имя колонки, а значение - условие фильтрации (например {"organization":"почта", "name":"Ольга"}).
+addContacts (POST api/contacts/add) - добавление нового параметра
+ Параметры:
+	name
+	last_name
+	patronymic
+	organization
+	post
+	email
+	phone
+	holder - владелец контакта (может указывать только администратор)
+deleteContacts (DELETE api/contacts/<id контакта>) - удаление контакта
+updateContacts (PULL api/contacts/<id контакта>) - изменение контакта
+
+newUser (POST api/userList)
+deleteUser (DELETE api/userList/<id пользователя>)
+
+RESET (POST api/userList/reset)
+
+
+ОПИСАНИЕ КОДА:
+
 Сервер работает с двумя endpoint (назначение в app.js):
 "/api/userList" - работа с авторотационными данными пользователей API сервиса
 "/api/contacts" - работа непосредственно с базой контактов

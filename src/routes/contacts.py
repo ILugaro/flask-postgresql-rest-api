@@ -12,6 +12,7 @@ from models.entities.Contact import Contact
 
 
 def authentication(f):
+    '''Проверка логина и пароля. В случае успеха возвращает экземпляр клиента, в ином случае прерывает запрос'''
     def wrapper(*args, **kwargs):
         if not request.authorization: abort(make_response('Требуется basic авторизация по логину и паролю', 403))
         dict_info_user = UserModel.userInfo(request.authorization["username"])
@@ -36,6 +37,7 @@ def authentication(f):
 @main.route('/show', methods=['POST'])
 @authentication
 def show(user):
+    '''запрос контактов'''
     dict_params = {'search': '', 'sort': '', 'typeSort': '', 'filters': {}}
     for parametr in request.form:
         if not (parametr in dict_params):
@@ -55,6 +57,7 @@ def show(user):
 @main.route('/add', methods=['POST'])
 @authentication
 def add(user):
+    '''добавление нового контакта'''
     # проверка корректности запроса
     MAY_EXIST = ['name', 'last_name', 'patronymic', 'organization', 'post', 'email', 'phone', 'holder' ]
     for parametr in request.form:
@@ -82,6 +85,7 @@ def add(user):
 @main.route('/<contact_id>', methods=['DELETE'])
 @authentication
 def delete(user, contact_id):
+    '''удаление контакта'''
     if 'irrevocable' in request.form and request.form['irrevocable']:  # если запрашивается безвозвратное удаление
         err = user.delete_contact_irrevocably(contact_id) # вернет None в случае успеха
     else:
@@ -92,7 +96,7 @@ def delete(user, contact_id):
 @main.route('/<contact_id>', methods=['PUT'])
 @authentication
 def update_contact(user, contact_id):
-
+    '''изменение существующего контакта'''
     dict_parametrs = {}
     temp_contact = Contact()
 

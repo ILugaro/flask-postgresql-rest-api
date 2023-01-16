@@ -14,6 +14,7 @@ from config import DevelopmentConfig
 
 
 def admin_only(f):
+    '''проверка прав администратора у клиента. В случае успеха будет передан экземпляр клиента, в ином случае запрос будет отклонен'''
     def wrapper(*args, **kwargs):
         if not request.authorization: abort(make_response('Требуется basic авторизация по логину и паролю', 403))
         dict_info_user = UserModel.userInfo(request.authorization["username"])
@@ -43,6 +44,7 @@ def debug_only(f):
 @main.route('/', methods=['POST'])
 @admin_only
 def addNewUser(user):
+    '''добавление нового пользователя'''
     MUST_HAVE = ['login', 'password'];  # обязательные параметры
     MAY_HAVE = ['login', 'password', 'role'];  # возможные параметры
     for parametr in MUST_HAVE:
@@ -80,10 +82,11 @@ def addNewUser(user):
 @main.route('/<login>', methods=['DELETE'])
 @admin_only
 def delUser(user, login):
+    '''удаление пользователя'''
     dict_info_user = UserModel.userInfo(login)
     if dict_info_user['err']: abort(make_response(dict_info_user['err'], 500))
     if not dict_info_user['data']:
-        abort((make_response(f'Пользователь с логином {login} отсутствует!'), 400))
+        abort(make_response(f'Пользователь с логином {login} отсутствует!', 400))
     err = UserModel.delUser(login)  # вернет None в случае успеха
     if err: abort(make_response(str(err), 500))
     return ('', 204)  # статус 204 отправляется без сообщения

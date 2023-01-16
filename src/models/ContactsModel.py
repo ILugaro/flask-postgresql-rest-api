@@ -1,6 +1,5 @@
 from database.db import get_connection
 
-
 class ContactsModel:
 
     def add_contact(contact):
@@ -18,7 +17,7 @@ class ContactsModel:
             print(ex)
             return ex
 
-
+    @staticmethod
     def delete_contact_irrevocably(id, holder=None):
         '''
         Удаляет контакт из БД по его id. holder - это id пользователя кто владеет контактом (защита от удаления чужих контактов)
@@ -38,7 +37,13 @@ class ContactsModel:
             return ex
 
     @staticmethod
+    # list_columns - колонки которые будут получены с SQL
+    # search - строка полнотекстового поиска
+    # sort - параметр сортировки
+    # typeSort - тип сортировки (reverse/standart)
+    # obj_filters - словарь для фильтрации, где ключ - имя колонки, а значение - условие фильтрации.
     def show_contascts(list_columns =['*'], search='', sort='', typeSort='', obj_filters=None):
+        '''запрос нужных контактов'''
         columns = ",".join(list_columns)
         str_filter = ''
         if obj_filters:
@@ -75,7 +80,6 @@ class ContactsModel:
             with connection.cursor() as cursor:
                 cursor.execute("SELECT " + columns + " FROM contacts" + str_SQL)
                 rows = cursor.fetchall()
-                print(rows)
             return {'contacts': rows, 'err': ''}
         except Exception as ex:
             print(ex)
@@ -122,6 +126,7 @@ class ContactsModel:
 
     @staticmethod
     def clear_contacts():
+        '''очистка БД контактов (только для DEBUG режима)'''
         try:
             connection = get_connection()
             with connection.cursor() as cursor:

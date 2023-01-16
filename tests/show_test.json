@@ -16,7 +16,15 @@
         "status": 200}
     },
 {"requests":
-    {"target": "Полнотекстовый поиск по отчеству",
+    {"target": "Неверный полнотекстовый поиск.",
+        "data": {"search": "Гордиенко Коля"},
+        "client": {"login": "Admin2", "pass": "Qwerty123"}},
+    "response":
+        {"count": 0,
+        "check_data": null,
+        "status": 200}},
+{"requests":
+    {"target": "Полнотекстовый поиск по отчеству.",
         "data": {"search": "Валерьевна"},
         "client": {"login": "Admin2", "pass": "Qwerty123"}},
     "response":
@@ -24,7 +32,7 @@
         "check_data": {"patronymic": "Валерьевна"},
         "status": 200}},
 {"requests":
-    {"target": "Попытка доступа по несуществующему логину",
+    {"target": "Попытка доступа по несуществующему логину.",
         "data": {},
         "client": {"login": "wrong", "pass": "Qwerty123"}},
     "response":
@@ -32,11 +40,43 @@
         "check_data": null,
         "status": 403}},
 {"requests":
-    {"target": "Попытка доступа по неверному паролю",
+    {"target": "Попытка доступа по неверному паролю.",
         "data": {},
         "client": {"login": "DefaultUser1", "pass": "wrong"}},
     "response":
         {"count": null,
         "check_data": null,
-        "status": 403}}    
+        "status": 403}},
+{"requests":
+        {"target": "Просмотр всех контактов админом.",
+            "data": {},
+            "client": {"login": "Admin2", "pass": "Qwerty123"}},
+        "response":
+            {"count": 12,
+            "check_data": null,
+            "status": 200}},
+{"requests":
+        {"target": "Просмотр всех контактов стандартным пользователем.",
+            "data": {},
+            "client": {"login": "DefaultUser2", "pass": "PassUser2"}},
+        "response":
+            {"count": 5,
+            "check_data": null,
+            "status": 200}}, 
+{"requests":
+        {"target": "Фильтрация по имени админом.",
+            "data": {"filters":"{\"name\":\"Ольга\"}"},
+            "client": {"login": "Admin2", "pass": "Qwerty123"}},
+        "response":
+            {"count": 2,
+            "check_data": {"name":"Ольга"},
+            "status": 200}},
+{"requests":
+        {"target": "Фильтрация по фамилии стандартным пользователем.",
+                "data": {"filters":"{\"last_name\":\"Соколов\"}"},
+                "client": {"login": "DefaultUser1", "pass": "PassUser1"}},
+        "response":
+                {"count": 1,
+                "check_data": {"last_name":"Соколов"},
+                "status": 200}}            
 ]
