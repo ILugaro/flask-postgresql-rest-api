@@ -13,11 +13,11 @@ from models.entities.Contact import Contact
 
 def authentication(f):
     def wrapper(*args, **kwargs):
-        if not request.authorization: abort(make_response('Требуется basic авторизация по логину и паролю'), 403)
+        if not request.authorization: abort(make_response('Требуется basic авторизация по логину и паролю', 403))
         dict_info_user = UserModel.userInfo(request.authorization["username"])
-        if dict_info_user['err']: abort(make_response(dict_info_user['err']), 500)
+        if dict_info_user['err']: abort(make_response(dict_info_user['err'], 500))
         info_user = dict_info_user['data']
-        if not info_user: abort(make_response('Неверный логин'), 403)
+        if not info_user: abort(make_response('Неверный логин', 403))
 
         # создания экзампляра Admin или Default_user в зависимости от роли клиента
         if info_user[2] == 'a':
@@ -25,7 +25,7 @@ def authentication(f):
         elif info_user[2] == 'd':
             user = Default_user(request.authorization["username"], 'pbkdf2:sha256:' + info_user[1])
         user.userId = info_user[0]
-        if not user.check_password(request.authorization["password"]): abort(make_response('Неверный пароль'), 403)
+        if not user.check_password(request.authorization["password"]): abort(make_response('Неверный пароль!', 403))
 
         return f(user,*args, **kwargs)
 
@@ -36,7 +36,7 @@ def authentication(f):
 @main.route('/show', methods=['POST'])
 @authentication
 def show(user):
-    dict_params = {'search': '', 'sort': '', 'typeSort': '', 'filters': None}
+    dict_params = {'search': '', 'sort': '', 'typeSort': '', 'filters': {}}
     for parametr in request.form:
         if not (parametr in dict_params):
             abort(make_response(f'Неизвестный параметр: "{parametr}"', 400))
@@ -48,7 +48,7 @@ def show(user):
             if not (request.form['typeSort'] == 'standart' or 'reverse'): return abort(make_response('Недопустимое значение "typeSort". Укажите "standart" или "reverse".', 400))
         dict_params[parametr] = request.form[parametr]
     data = user.show(dict_params['search'], dict_params['sort'], dict_params['typeSort'], dict_params['filters'])
-    if data['err']: abort(data['err'], 500)
+    if data['err']: abort(make_response(data['err'], 500))
     return data['contacts']
 
 
