@@ -1,26 +1,42 @@
 [{"requests":
     {"target": "Полнотекстовый поиск админом.",
-        "data": {"search": ""},
+        "data": {"search": "Гордиенко Сергей"},
         "client": {"login": "Admin2", "pass": "Qwerty123"}},
     "response":
         {"count": 1,
-        "check_data": {},
-        "status": ""}},
+        "check_data": {"last_name": "Гордиенко"},
+        "status": 200}},
 {"requests":
     {"target": "Полнотекстовый поиск стандартным пользователем.",
-        "data": {"search": ""},
-        "client": {"login": "", "pass": ""}},
+        "data": {"search": "Сергей Гордиенко"},
+        "client": {"login": "DefaultUser1", "pass": "PassUser1"}},
     "response":
         {"count": 1,
-        "check_data": {},
-        "status": ""}
+        "check_data": {"last_name": "Гордиенко"},
+        "status": 200}
     },
 {"requests":
-    {"target": "Полнотекстовый поиск админом",
-        "data": {"search": ""},
+    {"target": "Полнотекстовый поиск по отчеству",
+        "data": {"search": "Валерьевна"},
         "client": {"login": "Admin2", "pass": "Qwerty123"}},
     "response":
-        {"count": 1,
-        "check_data": {},
-        "status": ""}}
+        {"count": 2,
+        "check_data": {"patronymic": "Валерьевна"},
+        "status": 200}},
+{"requests":
+    {"target": "Попытка доступа по несуществующему логину",
+        "data": {},
+        "client": {"login": "wrong", "pass": "Qwerty123"}},
+    "response":
+        {"count": null,
+        "check_data": null,
+        "status": 403}},
+{"requests":
+    {"target": "Попытка доступа по неверному паролю",
+        "data": {},
+        "client": {"login": "DefaultUser1", "pass": "wrong"}},
+    "response":
+        {"count": null,
+        "check_data": null,
+        "status": 403}}    
 ]

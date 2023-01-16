@@ -24,19 +24,18 @@ def contact_creator(contacts, login, password):
         response = requests.request('POST', url_contacts + '/add', data=contact, auth=basic)
 
 def show(task):
-    data = {}
     auth = HTTPBasicAuth(task['requests']['client']['login'], task['requests']['client']['pass'])
-    response = requests.request('POST', url_contacts + '/show', data=data, auth=auth)
+    response = requests.request('POST', url_contacts + '/show', data=task["requests"]["data"], auth=auth)
     if not response.status_code == task['response']['status']:
         return f'Для теста "{task["requests"]["target"]}" несоответствующий код ответа ( получен код: {response.status_code})'
     if task['response']["count"] and not task['response']["count"] == len(response.json()):
-        return 'Количество полученных контактов не соотвтетствует ожидаемому количеству.'
+        return f'Количество полученных контактов не соотвтетствует ожидаемому количеству в тесте "{task["requests"]["target"]}".'
     if task['response']["check_data"]:
         dict_check_data = task['response']["check_data"]
         req = response.json()
         for check in dict_check_data:
             for contact in req:
-                if not contact[check] ==  req[check]:
+                if not contact[check] ==  dict_check_data[check]:
                     return f'Полученный контакты в тесте {task["requests"]["target"]} не соответствуют ожидаемым!'
     return None
 
