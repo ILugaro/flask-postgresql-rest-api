@@ -1,6 +1,6 @@
 venv/
 .env
 .idea
-
+pg_db
 __pycache__/
 *.py[cod]

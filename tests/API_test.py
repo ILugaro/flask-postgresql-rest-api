@@ -16,8 +16,8 @@ import requests
 from requests.auth import HTTPBasicAuth
 import json
 
-url_contacts = 'http://127.0.0.1:5000/api/contacts'
-url_listUsers = 'http://127.0.0.1:5000/api/userList'
+url_contacts = 'http://3.75.208.248/api/contacts'
+url_listUsers = 'http://3.75.208.248/api/userList'
 admin_auth = HTTPBasicAuth('firstAdmin', 'DHsh234ui')
 DefaultUser1_auth = HTTPBasicAuth('DefaultUser1', 'PassUser1')
 DefaultUser2_auth = HTTPBasicAuth('DefaultUser2', 'PassUser2')

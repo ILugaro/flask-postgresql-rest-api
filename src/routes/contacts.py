@@ -34,6 +34,11 @@ def authentication(f):
     return wrapper
 
 
+@main.route('/')
+def get_movies():
+     return (f'Новый контакт добавлен.', 201)
+
+
 @main.route('/show', methods=['POST'])
 @authentication
 def show(user):
