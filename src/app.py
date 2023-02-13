@@ -11,11 +11,6 @@ app = Flask(__name__)
 def page_not_found(error):
     return "<h1>Not found page</h1>", 404
 
-@app.route('/')
-def hello_world():
-    return 'Flask Dockerized123'
-
-
 if __name__ == '__main__':
     app.config.from_object(config['development'])
 
