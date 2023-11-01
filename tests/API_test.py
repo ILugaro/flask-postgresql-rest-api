@@ -1,4 +1,4 @@
-'''
+"""
 Тестирование работает только в режиме DEBUG (параметр в файле config.py)
 При старте тестирования происходит очистка существующей БД и создается тестовая БД
 contacts_for_DefaultUser1.json - база контактов для первого пользователя
@@ -11,7 +11,7 @@ show_test.json - список тестов для POST запроса получ
         count - количество контактов в ответе,
         check_data - обязательный параметр в каждом контакте
         status - полученный http код
-'''
+"""
 import requests
 from requests.auth import HTTPBasicAuth
 import json
@@ -32,7 +32,7 @@ with open('show_test.json', encoding='utf-8') as f:
     show_tests = json.load(f)
 
 def contact_creator(contacts, login, password):
-    '''создает базу контактов на основе списка с объектами. От имени пользователя login (password - пароль данного клиента)'''
+    """создает базу контактов на основе списка с объектами. От имени пользователя login (password - пароль данного клиента)"""
     basic = HTTPBasicAuth(login, password)
     for contact in contacts:
         response = requests.request('POST', url_contacts + '/add', data=contact, auth=basic)
@@ -54,7 +54,7 @@ def show(task):
     return None
 
 
-'''Очистка БД'''
+"""Очистка БД"""
 response = requests.request('POST', url_listUsers + '/reset', auth=admin_auth)
 response = requests.request('POST', url_contacts + '/show', auth=admin_auth)
 if len(response.json()) == 0:
@@ -63,16 +63,16 @@ else:
     print('Ошибка при очистке базы данных')
     exit()
 
-'''Создание дополнительных клиентов'''
+"""Создание дополнительных клиентов"""
 response = requests.request('POST', url_listUsers, auth=admin_auth, data={"login": "Admin2", "password": "Qwerty123", "role": "a"})
 response = requests.request('POST', url_listUsers, auth=admin_auth, data= {"login": "DefaultUser1", "password": "PassUser1", "role": "d"})
 response = requests.request('POST', url_listUsers, auth=admin_auth, data= {"login": "DefaultUser2","password": "PassUser2"})  # проверка присвоения роли стандартного пользователя по умолчанию
 
-'''Наполнение контактами с файла JSON'''
+"""Наполнение контактами с файла JSON"""
 contact_creator(contacts_user_1, 'DefaultUser1', 'PassUser1')
 contact_creator(contacts_user_2, 'DefaultUser2', 'PassUser2')
 
-'''Удаление контакта администратором'''
+"""Удаление контакта администратором"""
 response = requests.request('POST', url_contacts + '/show', data ={'filters': '{"name": "Виктор", "deleted": false}'}, auth=admin_auth)
 res_json = response.json()
 if not len(res_json) == 1 or not res_json[0]['name'] == 'Виктор':
@@ -85,7 +85,7 @@ if not response.json()[0]['deleted']:
     print(f'Не удалось выполнить удаление контакта id {str(contact_id)} администратором!')
     exit()
 
-'''Удаление контакта стандартным пользователем'''
+"""Удаление контакта стандартным пользователем"""
 response = requests.request('POST', url_contacts + '/show', data ={'filters': '{"name": "Дмитрий", "deleted": false}'}, auth=admin_auth)
 res_json = response.json()
 contact_id = res_json[0]['id']
@@ -101,7 +101,7 @@ if len(response.json()):
 
 print('База данных заполнена')
 
-'''Проверка функионала получения контактов. Тесты из файла show_test.json'''
+"""Проверка функионала получения контактов. Тесты из файла show_test.json"""
 for task in show_tests:
     err = show(task)  # в случае успешного прохождения теста - возвращает None
     if err:

@@ -1,6 +1,6 @@
 import psycopg2
-from psycopg2 import DatabaseError
 from decouple import config
+from psycopg2 import DatabaseError
 
 
 def get_connection():

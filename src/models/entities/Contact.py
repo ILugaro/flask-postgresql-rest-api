@@ -33,7 +33,8 @@ class Contact:
         email = email.strip()
         if '@' in email and '.' in email:
             self._email = email
-        else: return 'Неверный формат email'
+        else:
+            return 'Неверный формат email'
 
     def getEmail(self):
-        return  self._email
+        return self._email
